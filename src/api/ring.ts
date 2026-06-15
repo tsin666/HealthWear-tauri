@@ -1,6 +1,7 @@
 import { invoke } from "@tauri-apps/api/core";
 import type {
   ApiError,
+  BlePlatformInfo,
   ConnectionInfo,
   ScannedDevice,
   WisdomModeItem,
@@ -17,6 +18,10 @@ function asApiError(error: unknown): ApiError {
 
 export async function getConnection(): Promise<ConnectionInfo> {
   return invoke<ConnectionInfo>("get_connection");
+}
+
+export async function getBlePlatform(): Promise<BlePlatformInfo> {
+  return invoke<BlePlatformInfo>("get_ble_platform");
 }
 
 export async function scanDevices(): Promise<ScannedDevice[]> {

@@ -18,13 +18,16 @@ pub fn run() {
             let health = HealthStore::open(db_path).map_err(|e| {
                 Box::<dyn std::error::Error>::from(std::io::Error::other(e.to_string()))
             })?;
+            let bundle = ble::create_backend_bundle();
             app.manage(AppState {
-                ble: ble::create_backend(),
+                ble: bundle.backend,
+                ble_platform: bundle.platform,
                 health,
             });
             Ok(())
         })
         .invoke_handler(tauri::generate_handler![
+            commands::get_ble_platform,
             commands::get_connection,
             commands::scan_devices,
             commands::connect_device,

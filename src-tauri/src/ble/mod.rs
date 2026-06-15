@@ -34,6 +34,15 @@ pub struct ConnectionInfo {
     pub mock: bool,
 }
 
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct BlePlatformInfo {
+    pub os: String,
+    pub backend: String,
+    pub ble_available: bool,
+    pub hint: Option<String>,
+}
+
 pub trait RingBleBackend: Send + Sync {
     fn scan(&self) -> Result<Vec<ScannedDevice>, BleError>;
     fn connect(&self, device_id: &str) -> Result<(), BleError>;
@@ -145,17 +154,61 @@ impl RingBleBackend for MockBleBackend {
     }
 }
 
-#[cfg(not(any(target_os = "android", target_os = "ios")))]
-mod desktop;
+#[cfg(not(target_os = "ios"))]
+mod btleplug;
 
 pub type SharedBackend = Arc<dyn RingBleBackend>;
 
-pub fn create_backend() -> SharedBackend {
-    #[cfg(not(any(target_os = "android", target_os = "ios")))]
+pub struct BackendBundle {
+    pub backend: SharedBackend,
+    pub platform: BlePlatformInfo,
+}
+
+pub fn create_backend_bundle() -> BackendBundle {
+    #[cfg(not(target_os = "ios"))]
     {
-        if let Ok(backend) = desktop::DesktopBleBackend::try_new() {
-            return Arc::new(backend);
+        match btleplug::BtleplugBleBackend::try_new() {
+            Ok(backend) => BackendBundle {
+                backend: Arc::new(backend),
+                platform: BlePlatformInfo {
+                    os: std::env::consts::OS.to_string(),
+                    backend: "btleplug".into(),
+                    ble_available: true,
+                    hint: None,
+                },
+            },
+            Err(err) => BackendBundle {
+                backend: Arc::new(MockBleBackend::default()),
+                platform: BlePlatformInfo {
+                    os: std::env::consts::OS.to_string(),
+                    backend: "mock".into(),
+                    ble_available: false,
+                    hint: Some(format!("{err}。{}", mock_backend_hint())),
+                },
+            },
         }
     }
-    Arc::new(MockBleBackend::default())
+    #[cfg(target_os = "ios")]
+    {
+        BackendBundle {
+            backend: Arc::new(MockBleBackend::default()),
+            platform: BlePlatformInfo {
+                os: std::env::consts::OS.to_string(),
+                backend: "mock".into(),
+                ble_available: false,
+                hint: Some("iOS BLE 尚未接入".into()),
+            },
+        }
+    }
+}
+
+fn mock_backend_hint() -> String {
+    #[cfg(target_os = "android")]
+    {
+        "Android 真 BLE 需 btleplug Java 库，请运行 scripts/setup-android-ble.sh 后重新构建".into()
+    }
+    #[cfg(not(target_os = "android"))]
+    {
+        "未检测到可用蓝牙适配器，当前使用模拟设备".into()
+    }
 }

@@ -16,6 +16,6 @@
 # debugging stack traces.
 #-keepattributes SourceFile,LineNumberTable
 
-# If you keep the line number information, uncomment this to
-# hide the original source file name.
-#-renamesourcefileattribute SourceFile
+# btleplug Java classes (accessed only via JNI)
+-keep class com.nonpolynomial.** { *; }
+-keep class io.github.gedgygedgy.** { *; }

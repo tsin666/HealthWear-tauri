@@ -5,6 +5,13 @@ export interface ConnectionInfo {
   mock: boolean;
 }
 
+export interface BlePlatformInfo {
+  os: string;
+  backend: string;
+  bleAvailable: boolean;
+  hint: string | null;
+}
+
 export interface ScannedDevice {
   id: string;
   name: string;

@@ -1,9 +1,10 @@
 <script setup lang="ts">
 import { ref } from "vue";
-import type { ConnectionInfo, ScannedDevice } from "../types/ring";
+import type { BlePlatformInfo, ConnectionInfo, ScannedDevice } from "../types/ring";
 import {
   connectDevice,
   disconnectDevice,
+  getBlePlatform,
   getConnection,
   scanDevices,
 } from "../api/ring";
@@ -13,6 +14,7 @@ const emit = defineEmits<{
 }>();
 
 const connection = ref<ConnectionInfo | null>(null);
+const platform = ref<BlePlatformInfo | null>(null);
 const devices = ref<ScannedDevice[]>([]);
 const scanning = ref(false);
 const busy = ref(false);
@@ -20,6 +22,7 @@ const message = ref("");
 
 async function refreshConnection() {
   connection.value = await getConnection();
+  platform.value = await getBlePlatform();
 }
 
 async function handleScan() {
@@ -80,7 +83,9 @@ refreshConnection();
           }}
           <span v-if="connection?.mock" class="tag mock">模拟</span>
           <span v-else-if="connection?.connected" class="tag ble">真实 BLE</span>
+          <span v-if="platform" class="tag platform">{{ platform.backend }}</span>
         </p>
+        <p v-if="platform?.hint" class="platform-hint">{{ platform.hint }}</p>
       </div>
       <div class="actions">
         <button class="ghost" :disabled="scanning" @click="handleScan">
@@ -115,7 +120,12 @@ refreshConnection();
 
     <p v-if="message" class="hint">{{ message }}</p>
     <p v-else class="hint tip">
-      戒指在 macOS 可能显示为「Apple 无线键盘」（如 Q520 2A90）。若连接失败，请先在系统蓝牙里点「断开连接」，再在本应用扫描连接。
+      <template v-if="platform?.os === 'android'">
+        Android 需授予蓝牙权限。真机 BLE 请先运行 scripts/setup-android-ble.sh 构建 Java 库。
+      </template>
+      <template v-else>
+        戒指在 macOS 可能显示为「Apple 无线键盘」（如 Q520 2A90）。若连接失败，请先在系统蓝牙里点「断开连接」，再在本应用扫描连接。
+      </template>
     </p>
   </section>
 </template>
@@ -162,6 +172,18 @@ h2 {
 .tag.ble {
   background: #ecfdf5;
   color: #047857;
+}
+
+.tag.platform {
+  background: #f3f4f6;
+  color: #374151;
+}
+
+.platform-hint {
+  margin: 6px 0 0;
+  color: #b45309;
+  font-size: 12px;
+  line-height: 1.5;
 }
 
 .actions {

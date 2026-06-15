@@ -78,7 +78,7 @@ flowchart TB
 | **P4** | 健康数据（第一批） | ✅ | 心率/血氧/运动/血压 |
 | **P5** | 健康数据（第二批） | ✅ | 睡眠 + 综合/体温/温湿度 |
 | **P6** | 持久化 | ✅ | SQLite + CSV 导出 |
-| **P7** | Android 真 BLE | ⬜ | 替换 Mock 后端 |
+| **P7** | Android 真 BLE | 🚧 | btleplug + 权限 + 构建脚本 |
 | **P8** | ECG | ⬜ | 波形展示 / 分析接口 |
 | **P9** | 账号/云/OTA | ⬜ | 可选 |
 
@@ -125,11 +125,15 @@ flowchart TB
   exports/health_*.csv
 ```
 
-### P7 — Android 真 BLE ⬜
+### P7 — Android 真 BLE 🚧
 
-- [ ] `pnpm tauri android dev` 稳定运行
-- [ ] Android BLE 后端实现
-- [ ] 蓝牙权限配置
+- [x] 共享 `btleplug` 后端（桌面 + Android Rust 层）
+- [x] 蓝牙权限与运行时授权（Manifest + MainActivity）
+- [x] ProGuard keep 规则 + Gradle libs 目录
+- [x] `scripts/setup-android-ble.sh` 构建 Java 库
+- [ ] 真机验证 `pnpm tauri android dev`
+
+详见 [ANDROID_BLE.md](./ANDROID_BLE.md)。
 
 ### P8 — ECG ⬜
 
@@ -158,7 +162,7 @@ Step 8  更新 HealthPanel.vue + 真机验证
 | 功能 | Tauri 位置 | 状态 |
 |------|------------|------|
 | 智慧触控 | `WisdomModeList.vue` + `wisdom.rs` | ✅ |
-| BLE 连接 | `ble/desktop.rs` | ✅ |
+| BLE 连接 | `ble/btleplug.rs` | ✅ 桌面 / 🚧 Android |
 | 健康同步 | `health/sync.rs` + `HealthPanel.vue` | ✅ |
 | 本地存储 | `health/db.rs` | ✅ |
 | ECG | 待开发 | ⬜ P8 |
@@ -176,7 +180,7 @@ Step 8  更新 HealthPanel.vue + 真机验证
 
 | 能力 | 桌面 | Android |
 |------|------|---------|
-| BLE 连戒指 | ✅ | 🚧 Mock |
+| BLE 连戒指 | ✅ | 🚧 需 setup 脚本 |
 | 健康历史 | ✅ | 待接 |
 | ECG | ❌ | 待评估 |
 
@@ -210,3 +214,4 @@ cd .. && pnpm build
 | 2026-06-15 | P0–P4 | 工程、BLE、触控、4 项健康 |
 | 2026-06-15 | P5 | 睡眠 + 综合/体温/温湿度 |
 | 2026-06-15 | P6 | SQLite + CSV 导出 |
+| 2026-06-15 | P7 | Android btleplug 后端 + 权限 + 构建脚本 |

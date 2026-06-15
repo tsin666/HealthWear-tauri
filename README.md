@@ -56,10 +56,11 @@ docs/
 
 ```bash
 export ANDROID_HOME="$HOME/Library/Android/sdk"
+./scripts/setup-android-ble.sh   # 首次：构建 btleplug Java 库
 pnpm tauri android dev
 ```
 
-需本机安装 Android SDK、NDK 与模拟器/真机。
+详见 [docs/ANDROID_BLE.md](docs/ANDROID_BLE.md)。
 
 ## 文档
 

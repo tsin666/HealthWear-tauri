@@ -11,6 +11,7 @@ use tauri::{AppHandle, Manager, State};
 
 pub struct AppState {
     pub ble: SharedBackend,
+    pub ble_platform: crate::ble::BlePlatformInfo,
     pub health: HealthStore,
 }
 
@@ -63,6 +64,11 @@ impl From<tauri::Error> for ApiError {
             message: value.to_string(),
         }
     }
+}
+
+#[tauri::command]
+pub fn get_ble_platform(state: State<'_, AppState>) -> crate::ble::BlePlatformInfo {
+    state.ble_platform.clone()
 }
 
 #[tauri::command]

@@ -28,7 +28,7 @@ struct PendingCmd {
     tx: oneshot::Sender<Result<Vec<u8>, String>>,
 }
 
-pub struct DesktopBleBackend {
+pub struct BtleplugBleBackend {
     runtime: Runtime,
     manager: Manager,
     connection: Mutex<ConnectionInfo>,
@@ -36,7 +36,7 @@ pub struct DesktopBleBackend {
     session: Mutex<Option<Arc<Session>>>,
 }
 
-impl DesktopBleBackend {
+impl BtleplugBleBackend {
     pub fn try_new() -> Result<Self, BleError> {
         let runtime = Runtime::new().map_err(|e| BleError::Inner(e.to_string()))?;
         let manager = runtime
@@ -367,7 +367,7 @@ impl DesktopBleBackend {
     }
 }
 
-impl RingBleBackend for DesktopBleBackend {
+impl RingBleBackend for BtleplugBleBackend {
     fn scan(&self) -> Result<Vec<ScannedDevice>, BleError> {
         self.scan_blocking()
     }
